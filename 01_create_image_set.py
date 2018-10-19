@@ -1,5 +1,6 @@
 import glob, os
 import numpy as np
+import pandas as pd
 import cv2
 from collections import Counter
 
@@ -34,7 +35,7 @@ for file in img_files:
 
         y_train_clusters = np.append(y_train_clusters, [target_clusters], axis=0)
 
-
+x_train_gray = x_train_gray.reshape((len(img_files), 768, 1024, 1))
 
 # train set, aggregated --------
 
@@ -77,3 +78,12 @@ for folder in folders:
 
         y_train_target_obj = np.append(y_train_target_obj, [target], axis=0)
 
+
+
+x_train_gray.shape
+x_train_rgb.shape
+x_train_gray_agg.shape
+x_train_rgb_agg.shape
+
+y_train_clusters.shape
+y_train_target_obj.shape
