@@ -31,7 +31,9 @@ output_name_file = "df_clustering.csv"
 output_file = file.path(
   main_directory, 
   "data",
-  "output", 
+  "input",
+  "generated_by_us",
+  "clustering",
   output_name_file
 )
 
@@ -46,7 +48,7 @@ path_file_labels = file.path(
   file_labels_name
 )
 
-want_to_use_labels_per_image = TRUE
+
   
 # 03 Feature selection ----
 # Pretrained model
@@ -171,7 +173,7 @@ cluster_pca_with_labels <- kmeans(pca_components_with_labels, total_kgroups)
 
 cluster_list <- data.frame(
   cluster = cluster_pca$cluster, 
-  cluster_with_labels = cluster_pca_with_lavels$cluster,
+  cluster_with_labels = cluster_pca_with_labels$cluster,
   vgg16_feature_list
   ) %>%
   select(
@@ -187,6 +189,20 @@ df_output = cluster_list
 df_output$cluster = as.factor(df_output$cluster)
 df_output$cluster_with_labels = as.factor(df_output$cluster_with_labels)
 row.names(df_output) = NULL
+df_output$cluster = as.factor(as.numeric(df_output$cluster) - 1)
+df_output$cluster_with_labels = as.factor(as.numeric(df_output$cluster_with_labels) - 1)
+
+write.csv2(
+  x = df_output,
+  file = output_file
+)
+
+
+table(
+  df_output$cluster_with_labels,
+  df_output$cluster_with_labels
+
+  )
 
 df_output %>%
   ggplot(aes(x = PC1, y = PC2, color = cluster, label = class)) +
@@ -194,10 +210,6 @@ df_output %>%
   geom_text(aes(label=class),hjust=0, vjust=0)
 
 
-write.csv2(
-  x = df_output,
-  file = output_file
-)
 
 df_output %>% 
   group_by(

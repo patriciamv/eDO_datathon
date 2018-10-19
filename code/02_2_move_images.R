@@ -10,7 +10,7 @@ input_path = file.path(
   main_directory, 
   "data", 
   "input", 
-  "images"
+  "raw_images"
 )
 
 list_input_files = list.files(input_path)
@@ -113,3 +113,4 @@ for(i_folder in list_input_files){
 total_images_correctly_copied
 total_images_incorrectly_copied
 total_images_unk_copied
+
