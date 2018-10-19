@@ -39,3 +39,20 @@ pred <- h2o.predict(aml, test)  # predict(aml, test) also works
 
 # or:
 pred <- h2o.predict(aml@leader, test)
+
+#Confusion matrix on test data set
+h2o.table(pred$predict, test$TYPE)
+
+
+#compute performance
+perf <- h2o.performance(aml@leader,test)
+h2o.confusionMatrix(perf)
+h2o.accuracy(perf)
+h2o.tpr(perf)
+
+save(list = c('aml', 'pred'), file = 'data/output/aml_v_0_0.Rdata')
+
+# PREDICT OVER FINAL SET
+fread('final_set')
+h2o.predict(aml@leader, final_set)
+
