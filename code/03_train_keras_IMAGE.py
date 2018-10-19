@@ -18,7 +18,7 @@ model.add(Dense(3, activation="softmax"))
 model.compile(optimizer='adam', loss='categorical_crossentropy')
 
 #train the model
-model.fit(x_train_gray, y_train_clusters, validation_data=(x_train_gray, y_train_clusters), epochs=3)
+model.fit(x_train_gray[:3], y_train_clusters[:3], validation_data=(x_train_gray[:3], y_train_clusters[:3]), epochs=3)
 
 
 #predict first 3 images in the test set

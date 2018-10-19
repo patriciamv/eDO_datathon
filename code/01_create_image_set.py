@@ -7,12 +7,12 @@ from collections import Counter
 
 # train set, individually ------
 
-clusters = pd.read_csv("df_clustering.csv", sep=";")
+clusters = pd.read_csv(os.path.join( os.getcwd(), 'data', 'df_clustering.csv' ), sep=";")
 # labels_clusters = pd.read_csv("df_label_clustering.csv", sep=";")
 
-img_files = glob.glob(os.path.join("data_sample_2", "*", "*.*"))
+img_files = glob.glob(os.path.join(os.getcwd(), 'data', "data_sample_2", "*", "*.*"))
 for file in img_files:
-    pk = file.split("_")[3].split("/")[0]+"_"+os.path.split(file)[-1].split(".")[0].replace("picture", "")
+    pk = file.split("_")[4].split("/")[0]+"_"+os.path.split(file)[-1].split(".")[0].replace("picture", "")
     target_clusters = clusters[clusters.pk == pk].cluster.values[0]
     # target_clusters = labels_clusters[labels_clusters.pk == pk].cluster.values[0]
 
@@ -37,11 +37,14 @@ for file in img_files:
 
 x_train_gray = x_train_gray.reshape((len(img_files), 768, 1024, 1))
 
+
+
+
 # train set, aggregated --------
 
-target_obj = pd.read_csv("data_sample_2/hotels_sample.csv", sep=",")
+target_obj = pd.read_csv(os.path.join( os.getcwd(), 'data', "data_sample_2/hotels_sample.csv"), sep=",")
 
-folders = glob.glob(os.path.join("data_sample_2", "*"))
+folders = glob.glob(os.path.join(os.getcwd(), 'data', "data_sample_2", "*"))
 folders = list(filter(lambda x: "." not in x, folders))
 
 ids = list(map(lambda x: x.split("_")[-1].split("/")[0], img_files))
