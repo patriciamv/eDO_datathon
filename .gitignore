@@ -1,0 +1,9 @@
+.DS_Store
+*.Rproj
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+/data 
+/server
+/credentials
