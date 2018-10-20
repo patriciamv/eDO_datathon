@@ -10,7 +10,8 @@ input_path = file.path(
   main_directory, 
   "data", 
   "input", 
-  "raw_images"
+  "raw_images",
+  "train_data"
 )
 
 list_input_files = list.files(input_path)
@@ -33,9 +34,11 @@ ouptut_path = file.path(
 total_images_correctly_copied = 0
 total_images_incorrectly_copied = 0
 total_images_unk_copied = 0
-
+count_image = 1
 
 for(i_folder in list_input_files){
+  message(paste0("Processing file :", count_image))
+  count_image = count_image + 1
   # This piece of code takes the accomodation_id
   n_characters = nchar(i_folder)
   
@@ -110,7 +113,4 @@ for(i_folder in list_input_files){
   }
 }
 
-total_images_correctly_copied
-total_images_incorrectly_copied
-total_images_unk_copied
 
