@@ -3,6 +3,7 @@ data_folder <- 'data/input/'
 # LIBRARIES --------------------------------------------------------------------
 library(data.table)
 library(h2o)
+library(dplyr)
 # You can check the H2O UI on http://localhost:54321/flow/index.html
 h2o.init()
 
@@ -33,30 +34,49 @@ df_split <- merge(df_tg, df_clean, by.x = 'ID', by.y = 'AccomodationId')
 
 df_split <- df_split[, mget(names(df_split)[! grepl('V1',names(df_split))])]
 
+df_split$TYPE <- as.factor(df_split$TYPE)
+
 train <- df_split[is_test == 0,]
 test <- df_split[is_test == 1,]
 
-# Transform the set to train/test set into H2O
-train  <- as.h2o(train)
-test <- as.h2o(test)
 
+train = train %>%
+    select(
+        -ID,
+        -is_test
+    )
+# train <- train[,mget(setdiff(names(train), c('ID','is_test')))]
+test <- test[,mget(setdiff(names(test), c('ID','is_test')))]
+
+
+# Transform the set to train/test set into H2O
+
+train_h2o  <- as.h2o(train)
+train_h2o  <- train_h2o[-1, ]
+
+test_h2o <- as.h2o(test)
+test_h2o  <- test_h2o[-1, ]
 
 # Identify predictors and response ---------------------------------------------
+
+# Identify predictors and response
 y <- "TYPE"
-x <- setdiff(names(train), c(y, "ID", "is_test"))
+x_general = setdiff(names(train_h2o), y)
+x <- x_general
 
 # For binary classification, response should be a factor
-train[,y] <- as.factor(train[,y])
-test[,y] <- as.factor(test[,y])
+train_h2o[,y] <- as.factor(train_h2o[,y])
+test_h2o[,y] <- as.factor(test_h2o[,y])
 
 aml <- h2o.automl(x = x, y = y,
-                  training_frame = train,
-                  max_runtime_secs = 30)
+                  training_frame = train_h2o,
+                  max_runtime_secs = 60,
+                  exclude_algos = c("DRF", "GBM"),
+                  max_models = 10)
 
 # View the AutoML Leaderboard
 lb <- aml@leaderboard
 lb
-
 # The leader model is stored here
 aml@leader
 
@@ -64,29 +84,34 @@ aml@leader
 # predictions directly on the `"H2OAutoML"` object, or on the leader
 # model object directly
 
-pred <- h2o.predict(aml@leader, test)  # predict(aml, test) also works
+pred <- h2o.predict(aml, test_h2o)  # predict(aml, test) also works
 
 # or:
-pred <- h2o.predict(aml@leader, test)
+pred <- h2o.predict(aml@leader, test_h2o)
 
 #Confusion matrix on test data set
 h2o.table(pred$predict, test$TYPE)
 
 
 #compute performance
-perf <- h2o.performance(aml@leader,test)
+perf <- h2o.performance(aml@leader,test_h2o)
 h2o.confusionMatrix(perf)
-h2o.accuracy(perf)
-h2o.tpr(perf)
 
-save(list = c('aml', 'pred'), file = 'data/output/aml_v_0_0.Rdata')
+save.image(file = 'data/output/aml_v_0_0.RData')
 
 
 # SUBMIT -----------------------------------------------------------------------
 
+submit_id <- fread(paste0(data_folder,
+                       'labels_targets/accomodations_test.csv'),
+                encoding = "UTF-8")
+
+
 submit <- fread(paste0(data_folder,
                    'generated_by_us/labels_per_image/words_by_accomodation_test.csv'),
             encoding = "UTF-8")
+
+
 
 # Removed failed labels
 submit_clean <- submit[, mget(names(submit)[! grepl('Failed',names(submit))])]
@@ -94,5 +119,6 @@ submit_clean <- submit[, mget(names(submit)[! grepl('Failed',names(submit))])]
 submit_clean <- as.h2o(submit_clean)
 
 # PREDICT OVER FINAL SET
-h2o.predict(aml@leader, submit_clean)
+submit_pred <- h2o.predict(aml@leader, submit_clean)
+
 
