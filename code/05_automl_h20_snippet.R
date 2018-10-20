@@ -34,7 +34,7 @@ df_split <- merge(df_tg, df_clean, by.x = 'ID', by.y = 'AccomodationId')
 
 df_split <- df_split[, mget(names(df_split)[! grepl('V1',names(df_split))])]
 
-df_split$TYPE <- as.factor(df_split$TYPE)
+# df_split$TYPE <- as.factor(df_split$TYPE)
 
 train <- df_split[is_test == 0,]
 test <- df_split[is_test == 1,]
@@ -86,11 +86,8 @@ aml@leader
 
 pred <- h2o.predict(aml, test_h2o)  # predict(aml, test) also works
 
-# or:
-pred <- h2o.predict(aml@leader, test_h2o)
-
 #Confusion matrix on test data set
-h2o.table(pred$predict, test$TYPE)
+h2o.table(pred$predict, test_h2o$TYPE)
 
 
 #compute performance
@@ -116,9 +113,21 @@ submit <- fread(paste0(data_folder,
 # Removed failed labels
 submit_clean <- submit[, mget(names(submit)[! grepl('Failed',names(submit))])]
 
-submit_clean <- as.h2o(submit_clean)
+submit_clean = submit_clean %>%
+    select(
+        # -AccomodationId,
+        -V1
+    )
+
+submit_h2o <- as.h2o(submit_clean)
+submit_h2o  <- submit_h2o[-1, ]
 
 # PREDICT OVER FINAL SET
-submit_pred <- h2o.predict(aml@leader, submit_clean)
+submit_pred <- h2o.predict(aml@leader, submit_h2o)
 
+# Add accomodation id
+
+submit_id$TYPE <- as.vector(submit_pred[,1])
+
+fwrite(submit_id,'data/output/submit_v_0_0.csv')
 
