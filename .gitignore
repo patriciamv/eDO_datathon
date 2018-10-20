@@ -4,6 +4,8 @@
 .Rhistory
 .RData
 .Ruserdata
-/data 
+/data
 /server
 /credentials
+/train_data
+/test_data
