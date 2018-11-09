@@ -11,4 +11,5 @@
 /test_data
 *.xml
 *.iml
+/presentations
 /.idea
